@@ -15,6 +15,8 @@
 #include "api_door_controller.h"
 #include "api_object_controller.h"
 
+int keys_down = 0;
+int target_angle = 0;
 
 extern api_obj_description_t api_descriptors[];
 char path[100];

@@ -42,8 +42,16 @@
 #include "w_wad.h"
 #include "z_zone.h"
 
-#include <stdint.h>
-#include <stddef.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <stdio.h>
+
+#define SHM_NAME "/doom_framebuffer"
+
+static void* shm_ptr = NULL;
+static size_t shm_size = 0;
 
 // SDL video driver name
 
@@ -604,6 +612,11 @@ void I_FinishUpdate (void)
     // Draw!
 
     SDL_RenderPresent(renderer);
+
+    // copy the buffer to shared memory
+    if (shm_ptr) {
+        memcpy(shm_ptr, rgbabuffer->pixels, shm_size);
+    }
 }
 
 
@@ -1051,6 +1064,9 @@ static void SetVideoMode(int w, int h)
                                       0, 0, 0, 0);
     SDL_FillRect(rgbabuffer, NULL, 0);
 
+    // Setting up shared memory to access the buffer
+    SetupSharedMemory(rgbabuffer->pitch * rgbabuffer->h);
+
     // Set the scaling quality for rendering the intermediate texture into
     // the upscaled texture to "nearest", which is gritty and pixelated and
     // resembles software scaling pretty well.
@@ -1214,10 +1230,26 @@ void I_BindVideoVariables(void)
 #endif
 }
 
-uint8_t* I_GetRGBABuffer(void) {
-    return rgbabuffer ? (uint8_t*)rgbabuffer->pixels : NULL;
-}
+static void SetupSharedMemory(size_t size) {
+    shm_size = size;
 
-size_t I_GetRGBABufferSize(void) {
-    return rgbabuffer ? rgbabuffer->pitch * rgbabuffer->h : 0;
+    int shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
+    if (shm_fd == -1) {
+        perror("shm_open");
+        return;
+    }
+
+    if (ftruncate(shm_fd, size) == -1) {
+        perror("ftruncate");
+        close(shm_fd);
+        return;
+    }
+
+    shm_ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    if (shm_ptr == MAP_FAILED) {
+        perror("mmap");
+        shm_ptr = NULL;
+    }
+
+    close(shm_fd); // can close, memory stays mapped
 }

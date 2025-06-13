@@ -1252,4 +1252,5 @@ static void SetupSharedMemory(size_t size) {
     }
 
     close(shm_fd); // can close, memory stays mapped
+    fprintf(stderr, "shm_open succeeded, size: %zu\n", size);
 }

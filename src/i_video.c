@@ -265,7 +265,30 @@ void I_ShutdownGraphics(void)
     }
 }
 
+static void SetupSharedMemory(size_t size) {
+    shm_size = size;
 
+    int shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
+    if (shm_fd == -1) {
+        perror("shm_open");
+        return;
+    }
+
+    if (ftruncate(shm_fd, size) == -1) {
+        perror("ftruncate");
+        close(shm_fd);
+        return;
+    }
+
+    shm_ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    if (shm_ptr == MAP_FAILED) {
+        perror("mmap");
+        shm_ptr = NULL;
+    }
+
+    close(shm_fd); // can close, memory stays mapped
+    fprintf(stderr, "shm_open succeeded, size: %zu\n", size);
+}
 
 //
 // I_StartFrame
@@ -1228,29 +1251,4 @@ void I_BindVideoVariables(void)
     screen_width = 800;
     screen_height = 600;
 #endif
-}
-
-static void SetupSharedMemory(size_t size) {
-    shm_size = size;
-
-    int shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
-    if (shm_fd == -1) {
-        perror("shm_open");
-        return;
-    }
-
-    if (ftruncate(shm_fd, size) == -1) {
-        perror("ftruncate");
-        close(shm_fd);
-        return;
-    }
-
-    shm_ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
-    if (shm_ptr == MAP_FAILED) {
-        perror("mmap");
-        shm_ptr = NULL;
-    }
-
-    close(shm_fd); // can close, memory stays mapped
-    fprintf(stderr, "shm_open succeeded, size: %zu\n", size);
 }

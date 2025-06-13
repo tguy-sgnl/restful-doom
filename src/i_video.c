@@ -266,9 +266,10 @@ void I_ShutdownGraphics(void)
 }
 
 static void SetupSharedMemory(size_t size) {
+    int shm_fd;
     shm_size = size;
 
-    int shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
+    shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
     if (shm_fd == -1) {
         perror("shm_open");
         return;

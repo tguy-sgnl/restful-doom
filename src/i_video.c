@@ -42,6 +42,9 @@
 #include "w_wad.h"
 #include "z_zone.h"
 
+#include <stdint.h>
+#include <stddef.h>
+
 // SDL video driver name
 
 char *video_driver = "";
@@ -174,6 +177,18 @@ static unsigned int last_resize_time;
 // Gamma correction level to use
 
 int usegamma = 0;
+
+SDL_Surface* I_GetRGBASurface(void) {
+    return rgbabuffer;
+}
+
+uint8_t* I_GetRGBABuffer(void) {
+    return rgbabuffer ? (uint8_t*)rgbabuffer->pixels : NULL;
+}
+
+size_t I_GetRGBABufferSize(void) {
+    return rgbabuffer ? rgbabuffer->pitch * rgbabuffer->h : 0;
+}
 
 static boolean MouseShouldBeGrabbed()
 {

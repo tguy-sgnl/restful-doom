@@ -178,18 +178,6 @@ static unsigned int last_resize_time;
 
 int usegamma = 0;
 
-SDL_Surface* I_GetRGBASurface(void) {
-    return rgbabuffer;
-}
-
-uint8_t* I_GetRGBABuffer(void) {
-    return rgbabuffer ? (uint8_t*)rgbabuffer->pixels : NULL;
-}
-
-size_t I_GetRGBABufferSize(void) {
-    return rgbabuffer ? rgbabuffer->pitch * rgbabuffer->h : 0;
-}
-
 static boolean MouseShouldBeGrabbed()
 {
     // never grab the mouse when in screensaver mode
@@ -1224,4 +1212,12 @@ void I_BindVideoVariables(void)
     screen_width = 800;
     screen_height = 600;
 #endif
+}
+
+uint8_t* I_GetRGBABuffer(void) {
+    return rgbabuffer ? (uint8_t*)rgbabuffer->pixels : NULL;
+}
+
+size_t I_GetRGBABufferSize(void) {
+    return rgbabuffer ? rgbabuffer->pitch * rgbabuffer->h : 0;
 }

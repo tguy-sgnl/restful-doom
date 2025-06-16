@@ -48,7 +48,7 @@
 #include <unistd.h>
 #include <stdio.h>
 
-#define SHM_NAME "/doom_framebuffer"
+char shm_name[256];
 
 static void* shm_ptr = NULL;
 static size_t shm_size = 0;
@@ -265,11 +265,31 @@ void I_ShutdownGraphics(void)
     }
 }
 
+void select_available_shm_name() {
+    for (int i = 0; i < 4; i++) {
+        snprintf(shm_name, sizeof(shm_name), "/doom_framebuffer_%d", i);
+
+        int fd = shm_open(shm_name, O_RDWR, 0);
+        if (fd == -1) {
+            // Doesn't exist, we can use this one
+            return;
+        }
+
+        close(fd); // Clean up
+    }
+
+    // If we get here, no shm slots available
+    fprintf(stderr, "No available shared memory slots found\n");
+    exit(1);
+}
+
 static void SetupSharedMemory(size_t size) {
     int shm_fd;
     shm_size = size;
 
-    shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
+    select_available_shm_name();
+
+    shm_fd = shm_open(shm_name, O_CREAT | O_RDWR, 0666);
     if (shm_fd == -1) {
         perror("shm_open");
         return;

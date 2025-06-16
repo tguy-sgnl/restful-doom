@@ -107,9 +107,9 @@ void API_RunIO()
             API_SendResponse(response);
 
             // access log
-            remote_ip = SDLNet_TCP_GetPeerAddress(client_sd);
-            ip_str = SDLNet_ResolveIP(remote_ip);
-            printf("access_log: %s - - - \"%s %s\" %d\n", ip_str, request.method, request.full_path, response.status_code);
+            // remote_ip = SDLNet_TCP_GetPeerAddress(client_sd);
+            // ip_str = SDLNet_ResolveIP(remote_ip);
+            // printf("access_log: %s - - - \"%s %s\" %d\n", ip_str, request.method, request.full_path, response.status_code);
 
             SDLNet_TCP_DelSocket(set, client_sd);
             SDLNet_TCP_Close(client_sd);

@@ -1017,6 +1017,9 @@ static void SetVideoMode(int w, int h)
         flags |= SDL_WINDOW_RESIZABLE;
     }
 
+    // Attempting to remove x11 dependency...
+    flags |= SDL_WINDOW_HIDDEN;
+
     // Create window and renderer contexts. We set the window title
     // later anyway and leave the window position "undefined". If "flags"
     // contains the fullscreen flag (see above), then w and h are ignored.
@@ -1099,6 +1102,9 @@ static void SetVideoMode(int w, int h)
     // resembles software scaling pretty well.
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+
+    // (Probably) needed for SDL_WINDOW_HIDDEN flag
+    SDL_SetHint(SDL_HINT_VIDEODRIVER, "offscreen");
 
     // Create the intermediate texture that the RGBA surface gets loaded into.
     // The SDL_TEXTUREACCESS_STREAMING flag means that this texture's content

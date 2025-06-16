@@ -286,89 +286,79 @@ api_response_t API_GetPlayers()
 api_response_t patchPlayer(cJSON *req, int playernum)
 {
     player_t *player;
-    cJSON *val;
-    cJSON *amount;
-    cJSON *flags;
-    cJSON *root;
+    cJSON *val, *subval;
 
     if (M_CheckParm("-connect") > 0)
         return API_CreateErrorResponse(403, "clients may not patch the player");
 
     player = &players[playernum];
 
+    // --- Direct weapon switch ---
     val = cJSON_GetObjectItem(req, "weapon");
-    if (val)
-    {
-	    if (cJSON_IsNumber(val))
-            player->weaponowned[val->valueint - 1] = true;
-        else
-            return API_CreateErrorResponse(400, "Weapon value must be integer");
+    if (val && cJSON_IsNumber(val)) {
+        player->readyweapon = val->valueint;
+        player->weaponowned[val->valueint] = true;
     }
 
+    // --- Weapon inventory (nested object) ---
+    val = cJSON_GetObjectItem(req, "weapons");
+    if (val && cJSON_IsObject(val)) {
+        for (int i = 1; i <= 7; i++) {
+            const char *names[] = {
+                NULL, "Handgun", "Shotgun", "Chaingun",
+                "Rocket Launcher", "Plasma Rifle", "BFG?", "Chainsaw"
+            };
+            if (!names[i]) continue;
+            subval = cJSON_GetObjectItem(val, names[i]);
+            if (subval && cJSON_IsBool(subval))
+                player->weaponowned[i] = cJSON_IsTrue(subval);
+        }
+    }
+
+    // --- Ammo object (nested) ---
     val = cJSON_GetObjectItem(req, "ammo");
-    if (val)
-    {
-        amount = cJSON_GetObjectItem(req, "amount");
-        if (amount && cJSON_IsNumber(amount))
-        {
-	        if (cJSON_IsNumber(val))
-                player->ammo[val->valueint] = amount->valueint;
-            else
-                return API_CreateErrorResponse(400, "Ammo value must be integer");
-        }
-        else
-        {
-            return API_CreateErrorResponse(400, "Must provide ammo amount (integer)");
+    if (val && cJSON_IsObject(val)) {
+        const char *types[] = {"Bullets", "Shells", "Cells", "Rockets"};
+        for (int i = 0; i < 4; i++) {
+            subval = cJSON_GetObjectItem(val, types[i]);
+            if (subval && cJSON_IsNumber(subval))
+                player->ammo[i] = subval->valueint;
         }
     }
-    
+
     val = cJSON_GetObjectItem(req, "armor");
-    if (val)
-    {
-	    if (cJSON_IsNumber(val))
-            player->armorpoints = val->valueint;
-        else
-            return API_CreateErrorResponse(400, "Armor value must be integer");
-    }
+    if (val && cJSON_IsNumber(val))
+        player->armorpoints = val->valueint;
 
     val = cJSON_GetObjectItem(req, "health");
-    if (val)
-    {
-	    if (cJSON_IsNumber(val))
-        {
-            // we have to set both of these at the same time
-            player->health = val->valueint;
-            player->mo->health = val->valueint;
-        }
-        else
-        {
-            return API_CreateErrorResponse(400, "Health value must be integer");
-        }
+    if (val && cJSON_IsNumber(val)) {
+        player->health = val->valueint;
+        player->mo->health = val->valueint;
     }
 
-    flags = cJSON_GetObjectItem(req, "cheatFlags");
-    if (flags)
-    {
-        val = cJSON_GetObjectItem(flags, "CF_GODMODE");
-        if (val) 
-        {
-	        if (cJSON_IsNumber(val))
-                API_FlipFlag(&player->cheats, CF_GODMODE, val->valueint == 1);
-            else
-                return API_CreateErrorResponse(400, "GODMODE value must be integer");
-        }
-        val = cJSON_GetObjectItem(flags, "CF_NOCLIP");
-        if (val) 
-        {
-	        if (cJSON_IsNumber(val))
-                API_FlipFlag(&player->cheats, CF_NOCLIP, val->valueint == 1);
-            else
-                return API_CreateErrorResponse(400, "NOCLIP value must be integer");
-        }
+    // --- Cheat Flags ---
+    val = cJSON_GetObjectItem(req, "cheatFlags");
+    if (val && cJSON_IsObject(val)) {
+        subval = cJSON_GetObjectItem(val, "CF_GODMODE");
+        if (subval && cJSON_IsBool(subval))
+            API_FlipFlag(&player->cheats, CF_GODMODE, cJSON_IsTrue(subval));
+        subval = cJSON_GetObjectItem(val, "CF_NOCLIP");
+        if (subval && cJSON_IsBool(subval))
+            API_FlipFlag(&player->cheats, CF_NOCLIP, cJSON_IsTrue(subval));
     }
 
-    root = getPlayer(playernum);
-    return (api_response_t) {200, root};
+    // --- Key Cards ---
+    val = cJSON_GetObjectItem(req, "keyCards");
+    if (val && cJSON_IsObject(val)) {
+        if ((subval = cJSON_GetObjectItem(val, "blue")) && cJSON_IsBool(subval))
+            player->cards[it_bluecard] = cJSON_IsTrue(subval);
+        if ((subval = cJSON_GetObjectItem(val, "red")) && cJSON_IsBool(subval))
+            player->cards[it_redcard] = cJSON_IsTrue(subval);
+        if ((subval = cJSON_GetObjectItem(val, "yellow")) && cJSON_IsBool(subval))
+            player->cards[it_yellowcard] = cJSON_IsTrue(subval);
+    }
+
+    return (api_response_t){200, getPlayer(playernum)};
 }
 
 api_response_t API_PatchPlayer(cJSON *req)

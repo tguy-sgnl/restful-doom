@@ -1110,8 +1110,6 @@ static void SetVideoMode(int w, int h)
                                       SCREENWIDTH, SCREENHEIGHT, 32,
                                       0, 0, 0, 0);
 
-    fprintf(stderr, "RGBAbuffer format: 0x%x\n", rgbabuffer->format->format);
-
     SDL_FillRect(rgbabuffer, NULL, 0);
 
     // Setting up shared memory to access the buffer

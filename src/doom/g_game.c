@@ -334,8 +334,9 @@ void G_BuildTiccmd (ticcmd_t* cmd, int maketic)
 
     memset(cmd, 0, sizeof(ticcmd_t));
 
-    cmd->consistancy = 
-	consistancy[consoleplayer][maketic%BACKUPTICS]; 
+    //cmd->consistancy = 
+	//consistancy[consoleplayer][maketic%BACKUPTICS]; 
+    cmd->consistancy = players[consoleplayer].mo ? players[consoleplayer].mo->x : 0;
  
     strafe = gamekeydown[key_strafe] || mousebuttons[mousebstrafe] 
 	|| joybuttons[joybstrafe]; 

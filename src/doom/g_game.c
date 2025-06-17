@@ -955,7 +955,7 @@ void G_Ticker (void)
                     //    "consistency failure. cmd->consistancy (%i) should equal consistancy[i][buf] (%i)",
                     //    cmd->consistancy, consistancy[i][buf]); 
                     fprintf(stderr, "consistency failure. cmd->consistancy (%i) should equal consistancy[i][buf] (%i)", 
-                        cmd->consistancy, consistancy[i][buf]));
+                        cmd->consistancy, consistancy[i][buf]);
                 } 
                 if (players[i].mo) 
                 {

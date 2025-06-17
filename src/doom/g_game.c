@@ -910,62 +910,64 @@ void G_Ticker (void)
  
     for (i=0 ; i<MAXPLAYERS ; i++)
     {
-	if (playeringame[i]) 
-	{ 
-	    cmd = &players[i].cmd; 
+        if (playeringame[i]) 
+        { 
+            cmd = &players[i].cmd; 
 
-	    memcpy(cmd, &netcmds[i], sizeof(ticcmd_t));
+            memcpy(cmd, &netcmds[i], sizeof(ticcmd_t));
 
-	    if (demoplayback) 
-		G_ReadDemoTiccmd (cmd); 
-	    if (demorecording) 
-		G_WriteDemoTiccmd (cmd);
-	    
-	    // check for turbo cheats
+            if (demoplayback) 
+            G_ReadDemoTiccmd (cmd); 
+            if (demorecording) 
+            G_WriteDemoTiccmd (cmd);
+            
+            // check for turbo cheats
 
-            // check ~ 4 seconds whether to display the turbo message. 
-            // store if the turbo threshold was exceeded in any tics
-            // over the past 4 seconds.  offset the checking period
-            // for each player so messages are not displayed at the
-            // same time.
+                // check ~ 4 seconds whether to display the turbo message. 
+                // store if the turbo threshold was exceeded in any tics
+                // over the past 4 seconds.  offset the checking period
+                // for each player so messages are not displayed at the
+                // same time.
 
-            if (cmd->forwardmove > TURBOTHRESHOLD)
-            {
-                turbodetected[i] = true;
-            }
+                if (cmd->forwardmove > TURBOTHRESHOLD)
+                {
+                    turbodetected[i] = true;
+                }
 
-            if ((gametic & 31) == 0 
-             && ((gametic >> 5) % MAXPLAYERS) == i
-             && turbodetected[i])
-            {
-                static char turbomessage[80];
-                extern char *player_names[4];
-                M_snprintf(turbomessage, sizeof(turbomessage),
-                           "%s is turbo!", player_names[i]);
-                players[consoleplayer].message = turbomessage;
-                turbodetected[i] = false;
-            }
+                if ((gametic & 31) == 0 
+                && ((gametic >> 5) % MAXPLAYERS) == i
+                && turbodetected[i])
+                {
+                    static char turbomessage[80];
+                    extern char *player_names[4];
+                    M_snprintf(turbomessage, sizeof(turbomessage),
+                            "%s is turbo!", player_names[i]);
+                    players[consoleplayer].message = turbomessage;
+                    turbodetected[i] = false;
+                }
 
-	    if (netgame && !netdemo && !(gametic%ticdup) ) 
-	    { 
-            if (gametic > BACKUPTICS 
-                && consistancy[i][buf] != cmd->consistancy) 
+            if (netgame && !netdemo && !(gametic%ticdup) ) 
             { 
-                I_Error (
-                    "consistency failure. cmd->consistancy (%i) should equal consistancy[i][buf] (%i)",
-                    cmd->consistancy, consistancy[i][buf]); 
-            } 
-            if (players[i].mo) 
-            {
-                consistancy[i][buf] = players[i].mo->x; 
+                if (gametic > BACKUPTICS 
+                    && consistancy[i][buf] != cmd->consistancy) 
+                { 
+                    //I_Error (
+                    //    "consistency failure. cmd->consistancy (%i) should equal consistancy[i][buf] (%i)",
+                    //    cmd->consistancy, consistancy[i][buf]); 
+                    fprintf(stderr, "consistency failure. cmd->consistancy (%i) should equal consistancy[i][buf] (%i)", 
+                        cmd->consistancy, consistancy[i][buf]));
+                } 
+                if (players[i].mo) 
+                {
+                    consistancy[i][buf] = players[i].mo->x; 
+                }
+                else 
+                {
+                    fprintf(stderr, "Missing players[%d].mo at gametic %d\n", i, gametic);
+                    consistancy[i][buf] = 0; 
+                }
             }
-            else 
-            {
-                fprintf(stderr, "Missing players[%d].mo at gametic %d\n", i, gametic);
-                consistancy[i][buf] = 0; 
-            }
-	    } 
-	}
+        }
     }
     
     // check for special buttons

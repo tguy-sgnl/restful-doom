@@ -334,9 +334,8 @@ void G_BuildTiccmd (ticcmd_t* cmd, int maketic)
 
     memset(cmd, 0, sizeof(ticcmd_t));
 
-    //cmd->consistancy = 
-	//consistancy[consoleplayer][maketic%BACKUPTICS]; 
-    cmd->consistancy = players[consoleplayer].mo ? players[consoleplayer].mo->x : 0;
+    cmd->consistancy = 
+	consistancy[consoleplayer][maketic%BACKUPTICS]; 
  
     strafe = gamekeydown[key_strafe] || mousebuttons[mousebstrafe] 
 	|| joybuttons[joybstrafe]; 
@@ -952,11 +951,9 @@ void G_Ticker (void)
                 if (gametic > BACKUPTICS 
                     && consistancy[i][buf] != cmd->consistancy) 
                 { 
-                    //I_Error (
-                    //    "consistency failure. cmd->consistancy (%i) should equal consistancy[i][buf] (%i)",
-                    //    cmd->consistancy, consistancy[i][buf]); 
-                    fprintf(stderr, "consistency failure. cmd->consistancy (%i) should equal consistancy[i][buf] (%i)", 
-                        cmd->consistancy, consistancy[i][buf]);
+                    I_Error (
+                        "consistency failure. cmd->consistancy (%i) should equal consistancy[i][buf] (%i)",
+                        cmd->consistancy, consistancy[i][buf]); 
                 } 
                 if (players[i].mo) 
                 {

@@ -948,6 +948,11 @@ void G_Ticker (void)
 
             if (netgame && !netdemo && !(gametic%ticdup) ) 
             { 
+                if (players[i].mo) 
+                    consistancy[i][buf] = players[i].mo->x;
+                else 
+                    consistancy[i][buf] = 0;
+
                 if (gametic > BACKUPTICS 
                     && consistancy[i][buf] != cmd->consistancy) 
                 { 
@@ -959,15 +964,6 @@ void G_Ticker (void)
                         "consistency failure. cmd->consistancy (%i) should equal consistancy[i][buf] (%i)",
                         cmd->consistancy, consistancy[i][buf]); 
                 } 
-                if (players[i].mo) 
-                {
-                    consistancy[i][buf] = players[i].mo->x; 
-                }
-                else 
-                {
-                    fprintf(stderr, "Missing players[%d].mo at gametic %d\n", i, gametic);
-                    consistancy[i][buf] = 0; 
-                }
             }
         }
     }

@@ -951,6 +951,10 @@ void G_Ticker (void)
                 if (gametic > BACKUPTICS 
                     && consistancy[i][buf] != cmd->consistancy) 
                 { 
+                    fprintf(stderr,
+                        "[FAIL] tick %d player %d: cmd->consistancy=%d, buffer=%d (diff=%d)\n",
+                        gametic, i, cmd->consistancy, consistancy[i][buf],
+                        cmd->consistancy - consistancy[i][buf]);
                     I_Error (
                         "consistency failure. cmd->consistancy (%i) should equal consistancy[i][buf] (%i)",
                         cmd->consistancy, consistancy[i][buf]); 

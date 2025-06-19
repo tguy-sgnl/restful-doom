@@ -948,11 +948,6 @@ void G_Ticker (void)
 
             if (netgame && !netdemo && !(gametic%ticdup) ) 
             { 
-                if (players[i].mo) 
-                    consistancy[i][buf] = players[i].mo->x;
-                else 
-                    consistancy[i][buf] = 0;
-
                 if (gametic > BACKUPTICS 
                     && consistancy[i][buf] != cmd->consistancy) 
                 { 
@@ -963,7 +958,11 @@ void G_Ticker (void)
                     I_Error (
                         "consistency failure. cmd->consistancy (%i) should equal consistancy[i][buf] (%i)",
                         cmd->consistancy, consistancy[i][buf]); 
-                } 
+                }
+                if (players[i].mo) 
+                    consistancy[i][buf] = players[i].mo->x;
+                else 
+                    consistancy[i][buf] = 0;
             }
         }
     }

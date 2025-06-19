@@ -343,15 +343,13 @@ P_CheckSight
     strace.dx = t2->x - t1->x;
     strace.dy = t2->y - t1->y;
 
-    // Log when there's asymmetry
-    printf("SIGHT: console=%d t1_player=%d t2_player=%d pos1=(%d,%d) pos2=(%d,%d) result=%d\n",
-           consoleplayer, 
-           t1->player ? t1->player - players : -1,
-           t2->player ? t2->player - players : -1,
-           t1->x, t1->y, t2->x, t2->y, result);
-
-    // the head node is the last node output
-    return P_CrossBSPNode (numnodes-1);	
+    boolean result = P_CrossBSPNode(numnodes-1);
+    
+    // Simple logging without undefined variables
+    printf("SIGHT: t1=(%d,%d,%d) t2=(%d,%d,%d) result=%d\n",
+           t1->x, t1->y, t1->z, t2->x, t2->y, t2->z, result);
+    
+    return result;
 }
 
 

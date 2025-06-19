@@ -302,9 +302,6 @@ P_CheckSight
 ( mobj_t*	t1,
   mobj_t*	t2 )
 {
-    // TEMPORARY TEST
-    return false;
-    
     int		s1;
     int		s2;
     int		pnum;

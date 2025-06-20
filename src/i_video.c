@@ -266,6 +266,25 @@ void I_ShutdownGraphics(void)
 }
 
 void select_available_shm_name() {
+    int i = M_CheckParmWithArgs("-fbnum", 1);
+    if (i) {
+        int index = atoi(myargv[i + 1]);
+        if (index < 0 || index > 9) {
+            fprintf(stderr, "Invalid framebuffer number: %s\n", myargv[i + 1]);
+            exit(1);
+        }
+
+        snprintf(shm_name, sizeof(shm_name), "/doom_framebuffer_%d", index);
+        int fd = shm_open(shm_name, O_RDWR, 0);
+        if (fd != -1) {
+            close(fd);
+            fprintf(stderr, "Shared memory slot %s already in use\n", shm_name);
+            exit(1);
+        }
+
+        return;
+    }
+
     for (int i = 0; i < 4; i++) {
         snprintf(shm_name, sizeof(shm_name), "/doom_framebuffer_%d", i);
 
